@@ -70,7 +70,23 @@ Notes:
 -   The line size is 1.2, the colors are from the brewer "Dark2" palette. The theme is set to minimal.
 
 ```{r}
+tidytuesday_data <- tt_load("2019-02-19")
+phd_by_field <- tidytuesday_data$phd_by_field
 
+phd_by_field_aggregated <- phd_by_field %>%
+  group_by(year, broad_field) %>%
+  summarize(all_phds_by_broad_field = sum(n_phds, na.rm = TRUE), .groups = "drop")
+
+ggplot(phd_by_field_aggregated, aes(x = year, y = all_phds_by_broad_field, color = broad_field, group = broad_field)) +
+  geom_line(size = 1.2) +
+  scale_color_brewer(palette = "Dark2") +
+  scale_x_continuous(breaks = scales::pretty_breaks()) +
+  scale_y_continuous(labels = scales::comma_format()) +
+  theme_minimal() +
+   labs(title = "Number of awarded Ph.D.-s in the US by year",
+       x = NULL,
+       y = NULL,
+       color = "Broad Field")
 ```
 
 ## Task 3: Commute in the US

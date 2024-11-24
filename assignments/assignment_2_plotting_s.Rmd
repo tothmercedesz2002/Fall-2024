@@ -31,7 +31,32 @@ The 2020-09-22 TidyTueday datasets are about climbing expeditions. From the thre
 -   The bar colors use the viridis palette and light theme.
 
 ```{r}
+tidytuesday_data <- tt_load("2020-09-22")
+expeditions <- tidytuesday_data$expeditions
 
+expeditions <- expeditions %>%
+  mutate(
+    peak_name = as.factor(peak_name),
+    season = as.factor(season)
+    ) %>%
+  mutate(new_peak_name = fct_lump(peak_name, n = 15)) %>%
+  filter(
+    new_peak_name != "Other",
+    !is.na(new_peak_name)
+    ) %>%
+  mutate(new_peak_name = fct_drop(new_peak_name))
+  
+ggplot(expeditions, aes(x = fct_rev(fct_infreq(new_peak_name)), fill = season)) +
+  geom_bar() +
+  coord_flip() +
+  scale_fill_viridis_d() +
+  labs(
+    title = "The 15 most popular peaks stacked by season of expedition",
+    x = NULL,
+    y = "Number of expeditions"
+  ) +
+  theme_light() +
+  theme(legend.position = "bottom")
 ```
 
 ## Task 2: PhDs awarded

@@ -100,5 +100,25 @@ Notes:
 -   The point size is 2, . The theme is set to light.
 
 ```{r}
+tidytuesday_data <- tt_load("2019-11-05")
+commute <- tidytuesday_data$commute
 
+commute_aggregated <- commute %>%
+  mutate(state = recode(state, "Ca" = "California")) %>%
+  group_by(state,state_region, state_abb, mode) %>%
+  summarize(count = sum(n, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = mode, values_from = count)
+
+ggplot(commute_aggregated, aes(x = Walk, y = Bike)) +
+  geom_point(aes(color = state_region), size = 2) +
+  geom_text(aes(label = state_abb), size = 3, check_overlap = TRUE) +
+  scale_x_log10(labels = scales::comma_format()) +
+  scale_y_log10(labels = scales::comma_format()) +
+  theme_light() +
+    labs(
+    title = "Number of people walking vs. biking to work in each USA state",
+    x = "Number of ppl walking to work (log N)",
+    y = "Number of ppl biking to work (log N)",
+    color = "State region"
+    )
 ```

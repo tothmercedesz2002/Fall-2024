@@ -318,9 +318,9 @@ If based on the assumption tests you decide to drop a predictor variable you sho
 
 updated_complex_model <- lm(pain ~ age + sex + STAI_trait + pain_cat + mindfulness + cortisol_serum, data = data_filtered)
 
-glance(complex_model)
-summary(complex_model)
-tidy(complex_model, conf.int = TRUE)
+glance(updated_complex_model)
+summary(updated_complex_model)
+tidy(updated_complex_model, conf.int = TRUE)
 
 # Computing standardized beta coefficients
 
@@ -390,12 +390,30 @@ vif(updated_complex_model)
 Create the simple model and get the results of the model that needs to be reported based on the What to report section.
 
 ```{r}
+# Fitting the simple model and summarizing the model's statistics
 
+simple_model <- lm(pain ~ age + sex, data = data_filtered)
+
+glance(simple_model)
+summary(simple_model)
+tidy(simple_model, conf.int = TRUE)
+
+# Computing standardized beta coefficients
+
+simple_model_standardized <- lm.beta(simple_model)
+coef(simple_model_standardized)
 ```
 
 Create the more complex model based on the results of the model diagnostics. Also, get the results that needs to be reported based on the What to report section.
 
 ```{r}
+# Calling updated complex model and its statistics
+
+glance(complex_model)
+summary(complex_model)
+tidy(complex_model, conf.int = TRUE)
+updated_complex_model_standardized
+coef(updated_complex_model_standardized)
 
 ```
 

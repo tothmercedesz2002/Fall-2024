@@ -59,12 +59,18 @@ In your discussion of the findings, briefly interpret the results of the above a
 Read the dataset used in this assignment. Pay attention to the extension of the datafile.
 
 ```{r}
+# Loading necessary packages
+
 library(tidyverse)
 library(broom)
 library(car)
 library(lmtest)
 library(readxl)
 library(ggcorrplot)
+library(lm.beta)
+library(ggfortify)
+
+# Reading dataset
 
 data <- read_excel("C:/Users/Acer/Desktop/SULI4/ELTE PSZICHOLÓGIA BA/2024-25-1 (1. FÉLÉV)/PSZM21-MO-KUT-104.2 - Komplex adatelemzési eljárások - Adatelemzés R-programnyelven/Assignment/Fall-2024/data/assignment_3_dataset_.xlsx")
 ```
@@ -76,6 +82,7 @@ data <- read_excel("C:/Users/Acer/Desktop/SULI4/ELTE PSZICHOLÓGIA BA/2024-25-1 
 Run an exploratory data analysis (EDA) to investigate the dataset.
 
 ```{r}
+# Exploring dataset structure, summary statistics
 str(data)
 
 sum(is.na(data))
@@ -95,6 +102,9 @@ standard_deviations <- data %>%
     sd_household_income = sd(household_income)
     )
 
+# Sex
+
+is.factor(data$sex)
 table(data$sex)
 
 ggplot(data, aes(sex)) +
@@ -119,6 +129,8 @@ pain_summary <- data %>%
     mean_household_income = mean(household_income)
     )
 
+# Distribution of continuous variables
+
 data_long <- data %>%
   pivot_longer(cols = c(pain, age, STAI_trait, pain_cat, cortisol_serum, cortisol_saliva, mindfulness, weight, IQ, household_income),
                names_to = "variable", 
@@ -128,6 +140,8 @@ ggplot(data_long, aes(value)) +
   geom_histogram(bins = 20, fill = "pink", color = "black") +
   facet_wrap(~ variable, scales = "free")
 
+# Checking variables with values that are out of range
+
 ggplot(data, aes(mindfulness)) +
   geom_boxplot() +
   coord_flip()
@@ -135,6 +149,8 @@ ggplot(data, aes(mindfulness)) +
 ggplot(data, aes(pain)) +
   geom_boxplot() +
   coord_flip()
+
+# Visualizing connection between pain and age
 
 ggplot(data, aes(age, pain)) +
   geom_point() +
@@ -144,11 +160,15 @@ ggplot(data, aes(age, pain, color = sex)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE)
 
+# Checking for correlation between continuous variables
+
 continuous_variables_for_correlation <- data %>%
   select(pain, age, STAI_trait, pain_cat, cortisol_serum, cortisol_saliva, mindfulness, weight, IQ, household_income)
 
 correlation_matrix <- cor(continuous_variables_for_correlation)
+print(correlation_matrix)
 p_mat <- cor_pmat(continuous_variables_for_correlation)
+print(p_mat)
 ggcorrplot(correlation_matrix, p.mat = p_mat, lab = FALSE)
 ```
 
@@ -173,9 +193,18 @@ data_filtered <- data %>%
 In order to test the more complex model for outliers and to test the assumptions first build the model.
 
 ```{r}
+# Fitting the more complex model and summarizing the model's statistics
+
 complex_model <- lm(pain ~ age + sex + STAI_trait + pain_cat + mindfulness + cortisol_serum + cortisol_saliva, data = data_filtered)
 
+glance(complex_model)
 summary(complex_model)
+tidy(complex_model, conf.int = TRUE)
+
+# Computing standardized beta coefficients
+
+complex_model_standardized <- lm.beta(complex_model)
+coef(complex_model_standardized)
 ```
 
 #### Checking for influential outliers

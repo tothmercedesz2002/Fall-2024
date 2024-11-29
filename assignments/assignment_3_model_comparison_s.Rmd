@@ -140,13 +140,45 @@ ggplot(data_long, aes(value)) +
   geom_histogram(bins = 20, fill = "pink", color = "black") +
   facet_wrap(~ variable, scales = "free")
 
-# Checking variables with values that are out of range
+# Checking for outliers with boxplots
+
+ggplot(data, aes(age)) +
+  geom_boxplot() +
+  coord_flip()
+
+ggplot(data, aes(cortisol_saliva)) +
+  geom_boxplot() +
+  coord_flip()
+
+ggplot(data, aes(cortisol_serum)) +
+  geom_boxplot() +
+  coord_flip()
+
+ggplot(data, aes(household_income)) +
+  geom_boxplot() +
+  coord_flip()
+
+ggplot(data, aes(IQ)) +
+  geom_boxplot() +
+  coord_flip()
 
 ggplot(data, aes(mindfulness)) +
   geom_boxplot() +
   coord_flip()
 
 ggplot(data, aes(pain)) +
+  geom_boxplot() +
+  coord_flip()
+
+ggplot(data, aes(pain_cat)) +
+  geom_boxplot() +
+  coord_flip()
+
+ggplot(data, aes(STAI_trait)) +
+  geom_boxplot() +
+  coord_flip()
+
+ggplot(data, aes(weight)) +
   geom_boxplot() +
   coord_flip()
 
@@ -177,11 +209,15 @@ ggcorrplot(correlation_matrix, p.mat = p_mat, lab = FALSE)
 If you find values in the dataset during the EDA, that are not correct based on the provided descriptions of the variables of the dataset please correct them here.
 
 ```{r}
+# Sex as factor + recoding
+
 data <- data %>%
   mutate(sex = ifelse(sex == "woman", "female", sex)) %>%
   mutate(sex = factor(sex))
 
 is.factor(data$sex)
+
+# Filtering data that is out of given range
 
 data_filtered <- data %>%
     filter(pain >= 0 & pain <= 10, mindfulness >= 1 & mindfulness <= 6)
@@ -231,13 +267,13 @@ autoplot(complex_model, which = 2)
 # Compute leverage values and checking leverage for specific observations that deviate from the Q-Q plot line
 
 leverage_values <- hatvalues(complex_model)
-leverage_values[c(148, 106, 184)]
+leverage_values[c(104, 106, 148)]
 
 # Viewing observations that might be influential
 
+data_filtered[104, ]
 data_filtered[106, ]
 data_filtered[148, ]
-data_filtered[184, ]
 ```
 
 Check the linearity assumption.
@@ -265,7 +301,12 @@ https://statisticalhorizons.com/multicollinearity
 http://blog.minitab.com/blog/understanding-statistics/handling-multicollinearity-in-regression-analysis
 
 ```{r}
+# Calculating VIF values for complex model
 
+vif(complex_model)
+
+# Checking correlation between values of which VIF is > 5
+cor(data_filtered$cortisol_saliva, data_filtered$cortisol_serum)
 ```
 
 ### Making decision based on model diagnostics
@@ -273,13 +314,28 @@ http://blog.minitab.com/blog/understanding-statistics/handling-multicollinearity
 If based on the assumption tests you decide to drop a predictor variable you should do that here. Create your updated model.
 
 ```{r}
+# Fitting an updated complex model excluding cortisol_saliva and summarizing the model's statistics
 
+updated_complex_model <- lm(pain ~ age + sex + STAI_trait + pain_cat + mindfulness + cortisol_serum, data = data_filtered)
+
+glance(complex_model)
+summary(complex_model)
+tidy(complex_model, conf.int = TRUE)
+
+# Computing standardized beta coefficients
+
+updated_complex_model_standardized <- lm.beta(updated_complex_model)
+coef(updated_complex_model_standardized)
 ```
 
 #### Checking outliers of the updated model
 
 ```{r}
+# Cook's distance for the updated more complex model and checking for influential outliers (Cook's distance > 1)
 
+cooks_distance_updated_complex_model <- cooks.distance(updated_complex_model)
+influential_outliers_updated_complex_model <- which(cooks_distance_updated_complex_model > 1)
+influential_outliers_updated_complex_model
 ```
 
 #### Checking assumptions of the updated model
@@ -287,25 +343,44 @@ If based on the assumption tests you decide to drop a predictor variable you sho
 Normality assumption
 
 ```{r}
+# Q-Q plot for normality check
 
+autoplot(updated_complex_model, which = 2)
+
+# Compute leverage values
+
+leverage_values <- hatvalues(updated_complex_model)
+leverage_values[c(106, 109, 148)]
+
+# Viewing observations that might be influential
+
+data_filtered[106, ]
+data_filtered[109, ]
+data_filtered[148, ]
 ```
 
 Linearity assumption
 
 ```{r}
+# Residuals vs Fitted plot to check linearity
 
+autoplot(updated_complex_model, which = 1)
 ```
 
 Homoscedasticty assumption (homogeneity of variance)
 
 ```{r}
+# Residuals vs Fitted plot to check for homoscedasticity
 
+autoplot(updated_complex_model, which = 1)
 ```
 
 Multicollinearity assumption
 
 ```{r}
+# Calculating VIF values for complex model
 
+vif(updated_complex_model)
 ```
 
 ## Model comparison

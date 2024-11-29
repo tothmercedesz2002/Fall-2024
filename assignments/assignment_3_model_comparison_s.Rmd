@@ -212,7 +212,11 @@ coef(complex_model_standardized)
 Check for outlier values in the model.
 
 ```{r}
+# Cook's distance for the more complex model and checking for influential outliers (Cook's distance > 1)
 
+cooks_distance_complex_model <- cooks.distance(complex_model)
+influential_outliers_complex_model <- which(cooks_distance_complex_model > 1)
+influential_outliers_complex_model
 ```
 
 #### Checking assumptions
@@ -220,19 +224,36 @@ Check for outlier values in the model.
 Check the normality assumption.
 
 ```{r}
+# Q-Q plot for normality check
 
+autoplot(complex_model, which = 2)
+
+# Compute leverage values and checking leverage for specific observations that deviate from the Q-Q plot line
+
+leverage_values <- hatvalues(complex_model)
+leverage_values[c(148, 106, 184)]
+
+# Viewing observations that might be influential
+
+data_filtered[106, ]
+data_filtered[148, ]
+data_filtered[184, ]
 ```
 
 Check the linearity assumption.
 
 ```{r}
+# Residuals vs Fitted plot to check linearity
 
+autoplot(complex_model, which = 1)
 ```
 
 Check the homoscedasticty assumption (homogeneity of variance).
 
 ```{r}
+# Residuals vs Fitted plot to check for homoscedasticity
 
+autoplot(complex_model, which = 1)
 ```
 
 Check the multicollinearity assumption.

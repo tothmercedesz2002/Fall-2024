@@ -77,8 +77,24 @@ Run an exploratory data analysis (EDA) to investigate the dataset.
 
 ```{r}
 str(data)
-summary(data)
+
 sum(is.na(data))
+
+summary(data)
+standard_deviations <- data %>%
+   summarize(
+    sd_pain = sd(pain),
+    sd_age = sd(age),
+    sd_STAI_trait = sd(STAI_trait),
+    sd_pain_cat = sd(pain_cat),
+    sd_cortisol_serum = sd(cortisol_serum),
+    sd_cortisol_saliva = sd(cortisol_saliva),
+    sd_mindfulness = sd(mindfulness),
+    sd_weight = sd(weight),
+    sd_IQ = sd(IQ),
+    sd_household_income = sd(household_income)
+    )
+
 table(data$sex)
 
 ggplot(data, aes(sex)) +
@@ -90,7 +106,7 @@ ggplot(data, aes(pain)) +
 
 pain_summary <- data %>%
   group_by(sex) %>%
-  summarise(
+  summarize(
     mean_pain = mean(pain),
     mean_age = mean(age),
     mean_STAI_trait = mean(STAI_trait),
@@ -124,8 +140,8 @@ continuous_variables_for_correlation <- data %>%
   select(pain, age, STAI_trait, pain_cat, cortisol_serum, cortisol_saliva, mindfulness, weight, IQ, household_income)
 
 correlation_matrix <- cor(continuous_variables_for_correlation)
-
-ggcorrplot(correlation_matrix)
+p_mat <- cor_pmat(continuous_variables_for_correlation)
+ggcorrplot(correlation_matrix, p.mat = p_mat, lab = FALSE)
 ```
 
 #### Correct coding errors

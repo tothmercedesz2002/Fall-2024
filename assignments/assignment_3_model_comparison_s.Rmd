@@ -314,9 +314,9 @@ cor(data_filtered$cortisol_saliva, data_filtered$cortisol_serum)
 If based on the assumption tests you decide to drop a predictor variable you should do that here. Create your updated model.
 
 ```{r}
-# Fitting an updated complex model excluding cortisol_saliva and summarizing the model's statistics
+# Fitting an updated complex model excluding cortisol_serum (due to lower estimate than cortisol_saliva) and summarizing the model's statistics
 
-updated_complex_model <- lm(pain ~ age + sex + STAI_trait + pain_cat + mindfulness + cortisol_serum, data = data_filtered)
+updated_complex_model <- lm(pain ~ age + sex + STAI_trait + pain_cat + mindfulness + cortisol_saliva, data = data_filtered)
 
 glance(updated_complex_model)
 summary(updated_complex_model)
@@ -402,6 +402,29 @@ tidy(simple_model, conf.int = TRUE)
 
 simple_model_standardized <- lm.beta(simple_model)
 coef(simple_model_standardized)
+
+# Extracting specific model test statistics
+
+adjusted_r2_simple_model <- glance(simple_model) %>% pull(adj.r.squared)
+f_statistic_simple_model <- glance(simple_model) %>% pull(statistic)
+p_value_simple_model <- glance(simple_model) %>% pull(p.value)
+df_simple_model <- glance(simple_model) %>% pull(df)
+
+adjusted_r2_simple_model
+f_statistic_simple_model
+p_value_simple_model
+df_simple_model
+
+# Extracting coefficients
+
+standardized_coefficients_simple_model <- (coef(simple_model_standardized))[-1]
+  
+results_simple_model <- tidy(simple_model, conf.int = TRUE) %>%
+  select(term, estimate, conf.low, conf.high, p.value) %>%
+  mutate(standardized = c(NA, standardized_coefficients_simple_model))
+print(results_simple_model)
+
+# Regression equation: pain = 8.31 + (-0.0845 * age) + (0.131 * sex(male))
 ```
 
 Create the more complex model based on the results of the model diagnostics. Also, get the results that needs to be reported based on the What to report section.
@@ -409,17 +432,66 @@ Create the more complex model based on the results of the model diagnostics. Als
 ```{r}
 # Calling updated complex model and its statistics
 
-glance(complex_model)
-summary(complex_model)
-tidy(complex_model, conf.int = TRUE)
+glance(updated_complex_model)
+summary(updated_complex_model)
+tidy(updated_complex_model, conf.int = TRUE)
 updated_complex_model_standardized
 coef(updated_complex_model_standardized)
 
+# Extracting specific model test statistics
+
+adjusted_r2_updated_complex_model <- glance(updated_complex_model) %>% pull(adj.r.squared)
+f_statistic_updated_complex_model <- glance(updated_complex_model) %>% pull(statistic)
+p_value_updated_complex_model <- glance(updated_complex_model) %>% pull(p.value)
+df_updated_complex_model <- glance(updated_complex_model) %>% pull(df)
+
+adjusted_r2_updated_complex_model
+f_statistic_updated_complex_model
+p_value_updated_complex_model
+df_updated_complex_model
+
+# Extracting coefficients
+
+standardized_coefficients_updated_complex_model <- (coef(updated_complex_model_standardized))[-1]
+  
+results_updated_complex_model <- tidy(updated_complex_model, conf.int = TRUE) %>%
+  select(term, estimate, conf.low, conf.high, p.value) %>%
+  mutate(standardized = c(NA, standardized_coefficients_updated_complex_model))
+print(results_updated_complex_model)
+
+# Regression equation: pain = 1.26 * (Intercept) + (-0.0198) * age + 0.318 * sexmale + (-0.0299) * STAI_trait + 0.0981 * pain_cat + (-0.116) * mindfulness + 0.597 * cortisol_saliva
 ```
 
 Compare the two models.
 
 ```{r}
+# Comparing AIC values
+AIC_simple_model <- glance(simple_model) %>% pull(AIC)
+AIC_simple_model
 
+AIC_updated_complex_model <- glance(updated_complex_model) %>% pull(AIC)
+AIC_updated_complex_model
+
+# Comparing F values of the models
+
+f_statistic_updated_complex_model
+f_statistic_simple_model
+
+# Comparing p values of the models
+
+p_value_simple_model
+p_value_updated_complex_model
+
+# Likelihood ratio test
+
+likelihood_comparison <- anova(simple_model, updated_complex_model)
+likelihood_comparison
+
+F_statistic <- likelihood_comparison$F[2]
+p_value <- likelihood_comparison$`Pr(>F)`[2]
+p_value
+
+# Based on the results, the more complex model has better performance (smaller AIC, bigger F value, smaller p value).
+# When it comes to the coefficients, age was a significant predictor only in the simple model, but not in the complex model. Sex was not a significant predictor in the models. In the complex model, pain catastrophising and saliva cortisol level emerged as important predictors, especially saliva cortisol level. The hypothesis about sex and age are not supported based on the complex model, however psychological and hormonal factors seem to play a significant role in pain perception.
 ```
 

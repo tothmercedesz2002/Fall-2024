@@ -59,7 +59,13 @@ In your discussion of the findings, briefly interpret the results of the above a
 Read the dataset used in this assignment. Pay attention to the extension of the datafile.
 
 ```{r}
+library(tidyverse)
+library(broom)
+library(car)
+library(lmtest)
+library(readxl)
 
+data <- read_excel("C:/Users/Acer/Desktop/SULI4/ELTE PSZICHOLÓGIA BA/2024-25-1 (1. FÉLÉV)/PSZM21-MO-KUT-104.2 - Komplex adatelemzési eljárások - Adatelemzés R-programnyelven/Assignment/Fall-2024/data/assignment_3_dataset_.xlsx")
 ```
 
 ## Data and model diagnostics 
@@ -69,7 +75,54 @@ Read the dataset used in this assignment. Pay attention to the extension of the 
 Run an exploratory data analysis (EDA) to investigate the dataset.
 
 ```{r}
+str(data)
+summary(data)
+sum(is.na(data))
+table(data$sex)
 
+ggplot(data, aes(sex)) +
+  geom_bar()
+
+ggplot(data, aes(pain)) +
+  geom_bar() +
+  facet_wrap(~ sex)
+
+pain_summary <- data %>%
+  group_by(sex) %>%
+  summarise(
+    mean_pain = mean(pain),
+    mean_age = mean(age),
+    mean_STAI_trait = mean(STAI_trait),
+    mean_pain_cat = mean(pain_cat),
+    mean_cortisol_serum = mean(cortisol_serum),
+    mean_cortisol_saliva = mean(cortisol_saliva),
+    mean_mindfulness = mean(mindfulness),
+    mean_weight = mean(weight),
+    mean_IQ = mean(IQ),
+    mean_household_income = mean(household_income)
+    )
+
+data_long <- data %>%
+  pivot_longer(cols = c(pain, age, STAI_trait, pain_cat, cortisol_serum, cortisol_saliva, mindfulness, weight, IQ, household_income),
+               names_to = "variable", 
+               values_to = "value")
+
+ggplot(data_long, aes(value)) +
+  geom_histogram(bins = 20, fill = "pink", color = "black") +
+  facet_wrap(~ variable, scales = "free")
+
+ggplot(data, aes(mindfulness)) +
+  geom_boxplot() +
+  coord_flip()
+
+ggplot(data, aes(pain)) +
+  geom_boxplot() +
+  coord_flip()
+
+continuous_variables_for_correlation <- data %>%
+  select(pain, age, STAI_trait, pain_cat, cortisol_serum, cortisol_saliva, mindfulness, weight, IQ, household_income)
+
+correlation_matrix <- cor(continuous_variables_for_correlation)
 ```
 
 #### Correct coding errors
@@ -77,7 +130,14 @@ Run an exploratory data analysis (EDA) to investigate the dataset.
 If you find values in the dataset during the EDA, that are not correct based on the provided descriptions of the variables of the dataset please correct them here.
 
 ```{r}
+data <- data %>%
+  mutate(sex = ifelse(sex == "woman", "female", sex)) %>%
+  mutate(sex = factor(sex))
 
+is.factor(data$sex)
+
+data_filtered <- data %>%
+    filter(pain >= 0 & pain <= 10, mindfulness >= 1 & mindfulness <= 6)
 ```
 
 ### Model diagnostics

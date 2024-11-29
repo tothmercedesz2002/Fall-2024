@@ -64,6 +64,7 @@ library(broom)
 library(car)
 library(lmtest)
 library(readxl)
+library(ggcorrplot)
 
 data <- read_excel("C:/Users/Acer/Desktop/SULI4/ELTE PSZICHOLÓGIA BA/2024-25-1 (1. FÉLÉV)/PSZM21-MO-KUT-104.2 - Komplex adatelemzési eljárások - Adatelemzés R-programnyelven/Assignment/Fall-2024/data/assignment_3_dataset_.xlsx")
 ```
@@ -123,6 +124,8 @@ continuous_variables_for_correlation <- data %>%
   select(pain, age, STAI_trait, pain_cat, cortisol_serum, cortisol_saliva, mindfulness, weight, IQ, household_income)
 
 correlation_matrix <- cor(continuous_variables_for_correlation)
+
+ggcorrplot(correlation_matrix)
 ```
 
 #### Correct coding errors

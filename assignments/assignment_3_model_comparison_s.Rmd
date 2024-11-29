@@ -136,6 +136,14 @@ ggplot(data, aes(pain)) +
   geom_boxplot() +
   coord_flip()
 
+ggplot(data, aes(age, pain)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+ggplot(data, aes(age, pain, color = sex)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
 continuous_variables_for_correlation <- data %>%
   select(pain, age, STAI_trait, pain_cat, cortisol_serum, cortisol_saliva, mindfulness, weight, IQ, household_income)
 

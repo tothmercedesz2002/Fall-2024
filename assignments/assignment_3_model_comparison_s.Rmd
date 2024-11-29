@@ -165,7 +165,9 @@ data_filtered <- data %>%
 In order to test the more complex model for outliers and to test the assumptions first build the model.
 
 ```{r}
+complex_model <- lm(pain ~ age + sex + STAI_trait + pain_cat + mindfulness + cortisol_serum + cortisol_saliva, data = data_filtered)
 
+summary(complex_model)
 ```
 
 #### Checking for influential outliers

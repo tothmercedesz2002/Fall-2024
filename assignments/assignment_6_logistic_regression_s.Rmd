@@ -252,17 +252,17 @@ sum(is.na(data_filtered))
 
 ```{r}
 data_with_Leonardo <- tibble(
-  Survived = c(1, 1, 1),
-  Pclass = c(3, 3, 3),
-  Name = c("Sue", "Kate", "Leonardo"),
-  Sex = c("female", "female", "male"),
-  Age = c(20, 4, NA),                   
-  SibSp = c(1, 0, 1),
-  Parch = c(1, 2, 1),
-  Fare = c(8, 8, 8),
-  Embarked = c("S", "S", "S"),
-  Sex_numeric = c(1, 1, 0),
-  Cabin_had_nothad = c(0, 0, 0)
+  Survived = c(1, 1),
+  Pclass = c(3, 3),
+  Name = c("Sue", "Kate"),
+  Sex = c("female", "female"),
+  Age = c(20, 4),                 
+  SibSp = c(1, 0),
+  Parch = c(1, 2),
+  Fare = c(8, 8),
+  Embarked = c("S", "S"),
+  Sex_numeric = c(1, 1),
+  Cabin_had_nothad = c(0, 0)
   )
 
 print(data_with_Leonardo)
@@ -308,17 +308,35 @@ AIC_null_model
 logLik_null_model
 null.deviance_null_model
 
-# Predict survival probabilities for "data_with_Leonardo" using the null model
-
-predictions_with_Leonardo <- predict(null_model, data_with_Leonardo, type = "response")
-
-# Predict survival probabilities for "data_without_Leonardo" using the null model
-predictions_without_Leonardo <- predict(null_model, data_without_Leonardo, type = "response")
-
 # Predicted probabilities
 
-predictions_with_Leonardo
-predictions_without_Leonardo
+predictprob_null_with_Leonardo <- predict(null_model, data_with_Leonardo, type = "response")
+predictprob_null_without_Leonardo <- predict(null_model, data_without_Leonardo, type = "response")
+
+predictprob_null_with_Leonardo
+predictprob_null_without_Leonardo
+
+# Most likely response
+
+most_likely_null_with_Leonardo <- round(predictprob_null_with_Leonardo)
+most_likely_null_without_Leonardo <- round(predictprob_null_without_Leonardo)
+
+most_likely_null_with_Leonardo
+most_likely_null_without_Leonardo
+
+# Odds ratio and log odds ratio
+
+odds_ratio_null_with_Leonardo <- predictprob_null_with_Leonardo / (1 - predictprob_null_with_Leonardo)
+odds_ratio_null_without_Leonardo <- predictprob_null_without_Leonardo / (1 - predictprob_null_without_Leonardo)
+
+odds_ratio_null_with_Leonardo
+odds_ratio_null_without_Leonardo
+
+log_odds_ratio_null_with_Leonardo <- log(odds_ratio_null_with_Leonardo)
+log_odds_ratio_null_without_Leonardo <- log(odds_ratio_null_without_Leonardo)
+
+log_odds_ratio_null_with_Leonardo
+log_odds_ratio_null_without_Leonardo
 ```
 
 ## Building the model

@@ -538,18 +538,59 @@ accuracy_survived_0_without_Leonardo
 # Compare the models
 
 ```{r}
+# AIC
 
+AIC_null_model
+AIC_final_model
+
+# Chi-squared test
+
+logLik_null_model
+logLik_final_model
+
+chi_squared_stat <- 2 * (logLik_final_model - logLik_null_model)
+df <- length(coef(final_model)) - 1
+p_value <- 1 - pchisq(chi_squared_stat, df)
+
+chi_squared_stat
+p_value
+
+# McFadden's R²
+
+mcfadden_r2 <- 1 - (as.numeric(logLik_final_model) / as.numeric(logLik_null_model))
+mcfadden_r2
 ```
 
 # Calculate odds ratio and confidence interval
 
 ```{r}
+results_final_model <- final_model_unstandardized_coeff %>%
+  select(term, estimate, std.error, conf.low, conf.high, p.value) %>%
+  mutate(
+    Odds.Ratio = exp(estimate),
+    CI_Lower_Odds.Ratio = exp(conf.low),
+    CI_Upper_Odds.Ratio = exp(conf.high),
+    Chi_Squared = (estimate / std.error)^2
+  )
 
+results_final_model %>%
+  select(term, estimate, Odds.Ratio, CI_Lower_Odds.Ratio, CI_Upper_Odds.Ratio, Chi_Squared, p.value) %>%
+  print()
 ```
 
 # Report the results
 
 ```{r}
+# Null model equation: Survived = -0.47915
+# Final model equation: Survived = -0.3883 + -1.9398 * socioeconomic_statuslow + -0.881 * socioeconomic_statusmiddle + 3.002 * Sex_numeric + 0.3328 * Parch + -0.7181 * (Sex_numeric * Parch)
 
+# Based on the final model, people with higher socioeconomic status and men had higher chances to survive. Having parents and children also increased chances. But males with more parents/children had lower chances of survival.
+
+predictprob_final_with_Leonardo
+predictprob_final_without_Leonardo
+
+# Sue: with Leonardo's presence: 0.5717 → 57.17%; without Leonardo's presence: 0.5717 → 57.17%
+# Kate: With Leonardo's presence: 0.4758 → 47.58%; without Leonardo's presence: 0.5717 → 57.17%
+# Sue's survival seems to be unaffected.
 ```
 

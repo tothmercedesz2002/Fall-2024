@@ -102,6 +102,8 @@ standard_deviations <- data %>%
     sd_household_income = sd(household_income)
     )
 
+standard_deviations
+
 # Sex
 
 is.factor(data$sex)
@@ -128,6 +130,8 @@ pain_summary <- data %>%
     mean_IQ = mean(IQ),
     mean_household_income = mean(household_income)
     )
+
+pain_summary
 
 # Distribution of continuous variables
 

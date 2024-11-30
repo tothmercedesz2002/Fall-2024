@@ -30,7 +30,7 @@ This is the training dataset of the Titanic dataset from the Kaggle Titanic Chal
 ## Metadata
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
-metadata <- readr::read_tsv(here::here("data/assignment_6_metadata.tsv"))
+metadata <- readr::read_tsv(here::here("data/assignment_6_metadata_.tsv"))
 
 metadata %>% 
   knitr::kable()
@@ -71,12 +71,102 @@ In your discussion of the findings, briefly interpret the results of the above a
 Read the dataset used in this assignment. Pay attention to the extension of the datafile.
 
 ```{r}
-
+data <- haven::read_sav("C:/Users/Acer/Desktop/SULI4/ELTE PSZICHOLÓGIA BA/2024-25-1 (1. FÉLÉV)/PSZM21-MO-KUT-104.2 - Komplex adatelemzési eljárások - Adatelemzés R-programnyelven/Assignment/Fall-2024/data/assignment_6_dataset_.sav")
 ```
 
 ## EDA
 
 ```{r}
+# Exploring dataset structure, summary statistics
+str(data)
+
+sum(is.na(data))
+missing_values <- data[!complete.cases(data), ]
+sum(is.na(missing_values))
+sum(is.na(data$Age))
+
+columns_with_missing_values <- colnames(data)[colSums(is.na(data)) > 0]
+print(columns_with_missing_values)
+sum(is.na(data$Embarked))
+
+summary(data)
+
+# Converting into factors
+data$Survived <- factor(data$Survived, levels = c(0, 1), labels = c("No", "Yes"))
+data$Pclass <- factor(data$Pclass, levels = c(1, 2, 3), labels = c("1st", "2nd", "3rd"))
+data$Sex <- factor(data$Sex, levels = c("male", "female"), labels = c("Male", "Female"))
+data$Embarked <- factor(data$Embarked, levels = c("C", "Q", "S"), labels = c("Cherbourg", "Queenstown", "Southampton"))
+
+c(is.factor(data$Survived), is.factor(data$Pclass), is.factor(data$Sex), is.factor(data$Embarked))
+c(levels(data$Survived), levels(data$Pclass), levels(data$Sex), levels(data$Embarked))
+
+# Transforming "Cabin" into factor
+data <- data %>%
+  mutate(Cabin_factor = factor(ifelse(Cabin == "", 0, 1), 
+                               levels = c(0, 1), 
+                               labels = c("No cabin", "Had cabin")))
+
+is.factor(data$Cabin_factor)
+
+# Cheking factors' counts with barplots
+
+ggplot(data, aes(Survived)) +
+  geom_bar()
+
+ggplot(data, aes(Pclass)) +
+  geom_bar()
+
+ggplot(data, aes(Sex)) +
+  geom_bar()
+
+ggplot(data, aes(Embarked)) +
+  geom_bar()
+
+ggplot(data, aes(Cabin_factor)) +
+  geom_bar()
+
+# Checking distributions with histograms
+
+data_long <- data %>%
+  pivot_longer(cols = c(Age, SibSp, Parch, Fare),
+               names_to = "variable", 
+               values_to = "value")
+
+ggplot(data_long, aes(value)) +
+  geom_histogram(bins = 20, fill = "pink", color = "black") +
+  facet_wrap(~ variable, scales = "free")
+
+ggplot(data_long, aes(x = value, fill = Survived)) +
+  geom_histogram(bins = 20, color = "black", position = "dodge", alpha = 0.6) +
+  facet_wrap(~ variable, scales = "free")
+
+# Looking for outliers with boxplots
+
+ggplot(data, aes(Age)) +
+  geom_boxplot() +
+  coord_flip()
+
+ggplot(data, aes(SibSp)) +
+  geom_boxplot() +
+  coord_flip()
+
+ggplot(data, aes(Parch)) +
+  geom_boxplot() +
+  coord_flip()
+
+ggplot(data, aes(Fare)) +
+  geom_boxplot() +
+  coord_flip()
+
+# Computing standard deviations for numeric variables
+
+standard_deviations <- data %>%
+   summarize(
+    sd_Age = sd(Age, na.rm = TRUE),
+    sd_Fare = sd(Fare),
+    sd_Parch = sd(Parch),
+    sd_SibSp = sd(SibSp),
+    )
 
 ```
 

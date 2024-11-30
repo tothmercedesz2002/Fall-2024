@@ -260,7 +260,7 @@ data_with_Leonardo <- tibble(
   SibSp = c(1, 0),
   Parch = c(1, 2),
   Fare = c(8, 8),
-  Embarked = c("S", "S"),
+  Embarked = c("Southampton", "Southampton"),
   Sex_numeric = c(1, 1),
   Cabin_had_nothad = c(0, 0)
   )
@@ -276,7 +276,7 @@ data_without_Leonardo <- tibble(
   SibSp = c(0, 0),
   Parch = c(1, 1),
   Fare = c(8, 8),
-  Embarked = c("S", "S"),
+  Embarked = c("Southampton", "Southampton"),
   Sex_numeric = c(1, 1),
   Cabin_had_nothad = c(0, 0)
   )
@@ -342,13 +342,114 @@ log_odds_ratio_null_without_Leonardo
 ## Building the model
 
 ```{r}
+# Building the final model
 
+final_model <- glm(
+  Survived ~ Pclass + Sex_numeric + Age + SibSp + Parch + Cabin_had_nothad, 
+  data = data_filtered, 
+  family = binomial)
+
+broom::glance(final_model)
+summary(final_model)
+
+# Coefficients
+
+final_model_unstandardized_coeff <- broom::tidy(final_model, conf.int = TRUE)
+final_model_standardized_coeff <- lm.beta::lm.beta(final_model)
+coef(final_model_standardized_coeff)
+
+# Extracting specific model test statistics
+
+AIC_final_model <- broom::glance(final_model) %>% pull(AIC)
+logLik_final_model <- broom::glance(final_model) %>% pull(logLik)
+null.deviance_final_model <- broom::glance(final_model) %>% pull(null.deviance)
+
+AIC_final_model
+logLik_final_model
+null.deviance_final_model
+
+# Predicted probabilities
+
+predictprob_final_with_Leonardo <- predict(final_model, data_with_Leonardo, type = "response")
+predictprob_final_without_Leonardo <- predict(final_model, data_without_Leonardo, type = "response")
+
+predictprob_final_with_Leonardo
+predictprob_final_without_Leonardo
+
+# Most likely response
+
+most_likely_final_with_Leonardo <- round(predictprob_final_with_Leonardo)
+most_likely_final_without_Leonardo <- round(predictprob_final_without_Leonardo)
+
+most_likely_final_with_Leonardo
+most_likely_final_without_Leonardo
+
+# Odds ratio and log odds ratio
+
+odds_ratio_final_with_Leonardo <- predictprob_final_with_Leonardo / (1 - predictprob_final_with_Leonardo)
+odds_ratio_final_without_Leonardo <- predictprob_final_without_Leonardo / (1 - predictprob_final_without_Leonardo)
+
+odds_ratio_final_with_Leonardo
+odds_ratio_final_without_Leonardo
+
+log_odds_ratio_final_with_Leonardo <- log(odds_ratio_final_with_Leonardo)
+log_odds_ratio_final_without_Leonardo <- log(odds_ratio_final_without_Leonardo)
+
+log_odds_ratio_final_with_Leonardo
+log_odds_ratio_final_without_Leonardo
 ```
 
 # Check the assumptions
 
 ```{r}
 
+actual_with_Leonardo <- factor(data_with_Leonardo$Survived, levels = c(0, 1))
+most_likely_final_with_Leonardo <- factor(most_likely_final_with_Leonardo, levels = c(0, 1))
+actual_without_Leonardo <- factor(data_without_Leonardo$Survived, levels = c(0, 1))
+most_likely_final_without_Leonardo <- factor(most_likely_final_without_Leonardo, levels = c(0, 1))
+
+# Creating tibbles with actual and predicted values for confusion matrices
+
+data_with_Leonardo_tibble <- tibble(
+  actual = actual_with_Leonardo,
+  predicted = most_likely_final_with_Leonardo
+)
+
+data_without_Leonardo_tibble <- tibble(
+  actual = actual_without_Leonardo,
+  predicted = most_likely_final_without_Leonardo
+)
+
+# Creating confusion matrices
+
+confusion_with_Leonardo <- yardstick::conf_mat(data_with_Leonardo_tibble, truth = actual, estimate = predicted)
+confusion_without_Leonardo <- yardstick::conf_mat(data_without_Leonardo_tibble, truth = actual, estimate = predicted)
+
+print(confusion_with_Leonardo)
+print(confusion_without_Leonardo)
+
+autoplot(confusion_with_Leonardo)
+autoplot(confusion_without_Leonardo)
+
+# Calculating accuracy 
+
+check_72_threshold <- function(conf_matrix) {
+  cm_table <- conf_matrix$table
+  total_cases <- sum(cm_table)
+  TP <- cm_table[2, 2]
+  TN <- cm_table[1, 1]  
+  if (TP / total_cases >= 0.72 && TN / total_cases >= 0.72) {
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+
+result_with_Leonardo <- check_72_threshold(confusion_with_Leonardo)
+print(result_with_Leonardo)
+
+result_without_Leonardo <- check_72_threshold(confusion_without_Leonardo)
+print(result_without_Leonardo)
 ```
 
 # Compare the models

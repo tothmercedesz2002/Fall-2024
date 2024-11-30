@@ -77,14 +77,14 @@ data <- haven::read_sav("C:/Users/Acer/Desktop/SULI4/ELTE PSZICHOLÓGIA BA/2024-
 ## EDA
 
 ```{r}
-# Transformiing "Embarked" into factor
+# Transforming "Embarked" into factor
 
 data$Embarked <- factor(data$Embarked, levels = c("C", "Q", "S"), labels = c("Cherbourg", "Queenstown", "Southampton"))
 
 is.factor(data$Embarked)
 levels(data$Embarked)
 
-# Transformiing "Sex" into numeric
+# Transforming "Sex" into numeric
 
 data <- data %>%
   mutate(Sex_numeric = recode(Sex, "male" = 0, "female" = 1))

@@ -342,12 +342,72 @@ log_odds_ratio_null_without_Leonardo
 ## Building the model
 
 ```{r}
+# Creating extra predictors
+
+data_filtered <- data_filtered %>%
+   mutate(family_size = SibSp + Parch + 1) %>%
+  mutate(age_group = case_when(
+    Age < 12 ~ "child",
+    Age >= 12 & Age <= 18 ~ "teenager",
+    Age > 18 & Age <= 60 ~ "adult",
+    Age > 60 ~ "elderly"
+  )) %>%
+  mutate(Fare_group = case_when(
+    Fare <= quantile(Fare, 0.33, na.rm = TRUE) ~ "low",
+    Fare > quantile(Fare, 0.33, na.rm = TRUE) & Fare <= quantile(Fare, 0.67, na.rm = TRUE) ~ "medium",
+    Fare > quantile(Fare, 0.67, na.rm = TRUE) ~ "high"
+  )) %>%
+  mutate(socioeconomic_status = case_when(
+    Pclass == 1 & Fare > median(Fare) ~ "high",
+    Pclass == 2 ~ "middle",
+    Pclass == 3 | Fare <= median(Fare) ~ "low"
+  ))
+
+data_with_Leonardo <- data_with_Leonardo %>%
+   mutate(family_size = SibSp + Parch + 1) %>%
+  mutate(age_group = case_when(
+    Age < 12 ~ "child",
+    Age >= 12 & Age <= 18 ~ "teenager",
+    Age > 18 & Age <= 60 ~ "adult",
+    Age > 60 ~ "elderly"
+  )) %>%
+   mutate(Fare_group = case_when(
+    Fare <= quantile(Fare, 0.33, na.rm = TRUE) ~ "low",
+    Fare > quantile(Fare, 0.33, na.rm = TRUE) & Fare <= quantile(Fare, 0.67, na.rm = TRUE) ~ "medium",
+    Fare > quantile(Fare, 0.67, na.rm = TRUE) ~ "high"
+  )) %>%
+  mutate(socioeconomic_status = case_when(
+    Pclass == 1 & Fare > median(Fare) ~ "high",
+    Pclass == 2 ~ "middle",
+    Pclass == 3 | Fare <= median(Fare) ~ "low"
+  ))
+
+data_without_Leonardo <- data_without_Leonardo %>%
+  mutate(family_size = SibSp + Parch + 1) %>%
+  mutate(age_group = case_when(
+    Age < 12 ~ "child",
+    Age >= 12 & Age <= 18 ~ "teenager",
+    Age > 18 & Age <= 60 ~ "adult",
+    Age > 60 ~ "elderly"
+  )) %>%
+   mutate(Fare_group = case_when(
+    Fare <= quantile(Fare, 0.33, na.rm = TRUE) ~ "low",
+    Fare > quantile(Fare, 0.33, na.rm = TRUE) & Fare <= quantile(Fare, 0.67, na.rm = TRUE) ~ "medium",
+    Fare > quantile(Fare, 0.67, na.rm = TRUE) ~ "high"
+  )) %>%
+  mutate(socioeconomic_status = case_when(
+    Pclass == 1 & Fare > median(Fare) ~ "high",
+    Pclass == 2 ~ "middle",
+    Pclass == 3 | Fare <= median(Fare) ~ "low"
+  ))
+
 # Building the final model
 
 final_model <- glm(
-  Survived ~ Pclass + Sex_numeric + Age + SibSp + Parch + Cabin_had_nothad, 
+  Survived ~ socioeconomic_status + Sex_numeric * Parch, 
   data = data_filtered, 
-  family = binomial)
+  family = binomial,
+  )
 
 broom::glance(final_model)
 summary(final_model)
@@ -450,6 +510,29 @@ print(result_with_Leonardo)
 
 result_without_Leonardo <- check_72_threshold(confusion_without_Leonardo)
 print(result_without_Leonardo)
+
+# No matter what predictors I use, I can't reach the treshold.
+
+# Correct prediction percentages
+
+accuracy_final_with_Leonardo <- mean(most_likely_final_with_Leonardo == actual_with_Leonardo)
+accuracy_final_without_Leonardo <- mean(most_likely_final_without_Leonardo == actual_without_Leonardo)
+
+accuracy_final_with_Leonardo
+accuracy_final_without_Leonardo
+
+# Correct prediction percentages for each class
+
+accuracy_survived_1_with_Leonardo <- confusion_with_Leonardo$table[2,2] / sum(confusion_with_Leonardo$table[2,])
+accuracy_survived_0_with_Leonardo <- confusion_with_Leonardo$table[1,1] / sum(confusion_with_Leonardo$table[1,])
+
+accuracy_survived_1_without_Leonardo <- confusion_without_Leonardo$table[2,2] / sum(confusion_without_Leonardo$table[2,])
+accuracy_survived_0_without_Leonardo <- confusion_without_Leonardo$table[1,1] / sum(confusion_without_Leonardo$table[1,])
+
+accuracy_survived_1_with_Leonardo
+accuracy_survived_0_with_Leonardo
+accuracy_survived_1_without_Leonardo
+accuracy_survived_0_without_Leonardo
 ```
 
 # Compare the models

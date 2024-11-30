@@ -251,7 +251,7 @@ sum(is.na(data_filtered))
 ## Creating a datatable for Sue, Kate, and Leonardo
 
 ```{r}
-data_with_Leonardo <- data.frame(
+data_with_Leonardo <- tibble(
   Survived = c(1, 1, 1),
   Pclass = c(3, 3, 3),
   Name = c("Sue", "Kate", "Leonardo"),
@@ -267,7 +267,7 @@ data_with_Leonardo <- data.frame(
 
 print(data_with_Leonardo)
 
-data_without_Leonardo <- data.frame(
+data_without_Leonardo <- tibble(
   Survived = c(0, 1),
   Pclass = c(3, 3),
   Name = c("Sue", "Kate"),
@@ -287,7 +287,38 @@ print(data_without_Leonardo)
 ## Building the null model
 
 ```{r}
+# Building the null model
 
+null_model <- glm(Survived ~ 1, data = data_filtered, family = binomial)
+
+broom::glance(null_model)
+summary(null_model)
+
+# Intercept values
+
+broom::tidy(null_model, conf.int = TRUE)
+
+# Extracting specific model test statistics
+
+AIC_null_model <- broom::glance(null_model) %>% pull(AIC)
+logLik_null_model <- broom::glance(null_model) %>% pull(logLik)
+null.deviance_null_model <- broom::glance(null_model) %>% pull(null.deviance)
+
+AIC_null_model
+logLik_null_model
+null.deviance_null_model
+
+# Predict survival probabilities for "data_with_Leonardo" using the null model
+
+predictions_with_Leonardo <- predict(null_model, data_with_Leonardo, type = "response")
+
+# Predict survival probabilities for "data_without_Leonardo" using the null model
+predictions_without_Leonardo <- predict(null_model, data_without_Leonardo, type = "response")
+
+# Predicted probabilities
+
+predictions_with_Leonardo
+predictions_without_Leonardo
 ```
 
 ## Building the model

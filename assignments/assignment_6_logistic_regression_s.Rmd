@@ -77,7 +77,23 @@ data <- haven::read_sav("C:/Users/Acer/Desktop/SULI4/ELTE PSZICHOLÓGIA BA/2024-
 ## EDA
 
 ```{r}
-# Exploring dataset structure, summary statistics
+# Transformiing "Embarked" into factor
+
+data$Embarked <- factor(data$Embarked, levels = c("C", "Q", "S"), labels = c("Cherbourg", "Queenstown", "Southampton"))
+
+is.factor(data$Embarked)
+levels(data$Embarked)
+
+# Transformiing "Sex" into numeric
+
+data <- data %>%
+  mutate(Sex_numeric = recode(Sex, "male" = 0, "female" = 1))
+
+# Transforming "Cabin" (0 = no cabin, 1 = had cabin)
+data <- data %>%
+  mutate(Cabin_had_nothad = ifelse(Cabin == "", 0, 1))
+
+# Exploring dataset structure, summary statistics and missing values
 str(data)
 
 sum(is.na(data))
@@ -90,15 +106,6 @@ print(columns_with_missing_values)
 sum(is.na(data$Embarked))
 
 summary(data)
-
-# Transformiing "Sex" into numeric
-
-data <- data %>%
-  mutate(Sex_numeric = recode(Sex, "male" = 0, "female" = 1))
-
-# Transforming "Cabin" (0 = no cabin, 1 = had cabin)
-data <- data %>%
-  mutate(Cabin_had_nothad = ifelse(Cabin == "", 0, 1))
 
 # Cheking counts with barplots
 
@@ -229,7 +236,16 @@ ggcorrplot::ggcorrplot(correlation_matrix, p.mat = p_mat, lab = FALSE)
 ## Clean the data
 
 ```{r}
+# Calculating median of Age (ignoring NA values)
+Age_median <- median(data$Age, na.rm = TRUE)
 
+# Filtering out missing Embarked value and replacing missing Age values with the calculated median (and filter rows with NA in Embarked (imputing)
+
+data_filtered <- data %>%
+  filter(!is.na(Embarked)) %>%
+  mutate(Age = ifelse(is.na(Age), Age_median, Age))
+
+sum(is.na(data_filtered))
 ```
 
 ## Creating a datatable for Sue, Kate, and Leonardo

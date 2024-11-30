@@ -251,7 +251,37 @@ sum(is.na(data_filtered))
 ## Creating a datatable for Sue, Kate, and Leonardo
 
 ```{r}
+data_with_Leonardo <- data.frame(
+  Survived = c(1, 1, 1),
+  Pclass = c(3, 3, 3),
+  Name = c("Sue", "Kate", "Leonardo"),
+  Sex = c("female", "female", "male"),
+  Age = c(20, 4, NA),                   
+  SibSp = c(1, 0, 1),
+  Parch = c(1, 2, 1),
+  Fare = c(8, 8, 8),
+  Embarked = c("S", "S", "S"),
+  Sex_numeric = c(1, 1, 0),
+  Cabin_had_nothad = c(0, 0, 0)
+  )
 
+print(data_with_Leonardo)
+
+data_without_Leonardo <- data.frame(
+  Survived = c(0, 1),
+  Pclass = c(3, 3),
+  Name = c("Sue", "Kate"),
+  Sex = c("female", "female"),
+  Age = c(20, 4),                   
+  SibSp = c(0, 0),
+  Parch = c(1, 1),
+  Fare = c(8, 8),
+  Embarked = c("S", "S"),
+  Sex_numeric = c(1, 1),
+  Cabin_had_nothad = c(0, 0)
+  )
+
+print(data_without_Leonardo)
 ```
 
 ## Building the null model

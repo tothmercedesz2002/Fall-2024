@@ -511,7 +511,7 @@ print(result_with_Leonardo)
 result_without_Leonardo <- check_72_threshold(confusion_without_Leonardo)
 print(result_without_Leonardo)
 
-# No matter what predictors I use, I can't reach the treshold.
+# No matter what predictors I use, I can't reach the threshold.
 
 # Correct prediction percentages
 
